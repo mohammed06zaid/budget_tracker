@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime 
 import json
 class Expenses:
         counter = 00
@@ -40,9 +40,13 @@ class Expenses:
                 return cls.expenses_list
         @classmethod
         def to_json(cls, filename = "data.json"):
-                with open(filename, "w", encoding="utf-8") as f:
-                        json.dump(cls.get_expense_list(),f, ensure_ascii=False, indent=2)
-
+                try:
+                        with open(filename, "w", encoding="utf-8") as f:
+                                json.dump(cls.get_expense_list(),f, ensure_ascii=False, indent=2)
+                except FileNotFoundError:
+                        with open(filename, "x", encoding="utf-8") as f:
+                                json.dump(cls.get_expense_list(),f, ensure_ascii=False, indent=2)
+ 
 
         @classmethod
         def from_json(cls):

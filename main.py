@@ -43,6 +43,8 @@ def main():
     Expenses(28.0, "Food", "2025-04-18")
     Expenses(35.0, "Leisure", "2025-04-21")
 
+    Expenses.to_json()
+
 
     print(Expenses.output_all()) 
     print(Expenses.total_expenses()) 
