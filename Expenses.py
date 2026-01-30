@@ -143,3 +143,16 @@ class Expenses:
                         return ("⚠ Achtung! Budget überschritten um 45 € ", restgeld)
                 else: 
                         return restgeld 
+                
+        @classmethod
+        def delete_by_id(cls,id):
+                # Aus der Memory-Liste löschen
+                for index, item in enumerate(cls.expenses_list): 
+                        if(item["id"] == int(id)):
+                                cls.expenses_list.pop(index)
+                                break
+                # In JSON-Datei speichern
+                cls.to_json()
+                
+
+        

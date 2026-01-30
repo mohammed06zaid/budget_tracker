@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Ausgaben App</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+  <!-- DARK MODE BUTTON -->
+  <button id="toggle-theme" class="theme-btn" title="Dark Mode umschalten">
+    🌙
+  </button>
+
+  <!-- APP CONTAINER -->
+  <div class="app">
+
+    <!-- TITLE -->
+    <h1>💰 Meine Ausgaben</h1>
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <form id="expense-form">
+
+        <!-- BETRAG -->
+        <div class="field">
+          <label for="amount">Betrag (€)</label>
+          <input
+            type="number"
+            id="amount"
+            name="amount"
+            step="0.01"
+            required
+          >
+        </div>
+
+        <!-- KATEGORIE -->
+        <div class="field">
+          <label for="category">Kategorie</label>
+          <select id="category" name="category" required>
+            <option value="">Bitte wählen</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Rent">Rent</option>
+            <option value="Shopping">Shopping</option>
+          </select>
+        </div>
+
+        <!-- DATUM -->
+        <div class="field">
+          <label for="date">Datum</label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            required
+          >
+        </div>
+
+        <!-- SUBMIT -->
+        <button type="submit">
+          ➕ Ausgabe hinzufügen
+        </button>
+
+     
+
+      </form>
+    </div>
+
+    <!-- AUSGABEN LISTE (WIRD VON JS GEFÜLLT) -->
+    <div id="expenses"></div>
+
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
+
+
