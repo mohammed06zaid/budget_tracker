@@ -155,4 +155,13 @@ class Expenses:
                 cls.to_json()
                 
 
-        
+
+
+        @classmethod    
+        def totals_by_category(cls):
+                return {
+                        "Food": cls.total_by_category("Food"),
+                        "Rent": cls.total_by_category("Rent"),
+                        "Shopping": cls.total_by_category("Shopping"),
+                        "Transport": cls.total_by_category("Transport")
+                }

@@ -24,6 +24,17 @@ def get_expenses():
         return jsonify(Expenses.Expenses.expenses_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/expenses/categories', methods = ["GET"])
+def totals_by_category():
+    try:
+        if os.path.exists("data.json"):
+            Expenses.Expenses.expenses_list = Expenses.Expenses.from_json()
+            return jsonify(Expenses.Expenses.totals_by_category())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/expenses", methods=["POST"])
 def add_expense():
@@ -53,12 +64,8 @@ def delete_expenses(id):
         return "", 204
     except:
         return "", 404
-
-
-
-
-
-
+    
 
 if __name__ == "__main__":
     app.run(debug=True, port=9000)
+    
