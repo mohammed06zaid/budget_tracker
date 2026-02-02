@@ -18,6 +18,15 @@
   <!-- APP CONTAINER -->
   <div class="app">
 
+    <div class="layout">
+
+    <div class="chart-box">
+      <h2>📊 Ausgaben Übersicht</h2>
+      <canvas id="expensesChart"></canvas>
+    </div>
+
+    <div class = "content-box">
+
     <!-- TITLE -->
     <h1>💰 Meine Ausgaben</h1>
 
@@ -68,17 +77,36 @@
      
 
       </form>
-    </div>
+      </div>
+      <div class="stats-container">
+        <div class="stat-card">
+          <h3>💸 Höchste Ausgabe</h3>
+          <p id="max-value">– €</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>📉 Niedrigste Ausgabe</h3>
+          <p id="min-value">– €</p>
+        </div>
+        
+      </div>
 
     <!-- AUSGABEN LISTE (WIRD VON JS GEFÜLLT) -->
     <div id="expenses"></div>
 
 
   </div>
+  </div>
+  </div>
+
+   <!-- Chart.js Bibliothek -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
   <!-- JAVASCRIPT -->
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 
+ 
 </body>
 </html>
 

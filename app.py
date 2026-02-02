@@ -65,6 +65,25 @@ def delete_expenses(id):
     except:
         return "", 404
     
+@app.route("/expenses/max_min", methods = ["GET"])
+def max_min():
+    try: 
+        result = Expenses.Expenses.get_min_max_expense()
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+    
+@app.route("/expenses/status/<einkomm>", methods = ["Post"])
+def get_status():
+    try:
+
+        data = request.get_json()
+        income = float(data.get("income"))
+        result = Expenses.Expenses.get_budget_status(income)
+        return jsonify(result), 204
+    except Exception as e:
+        return jsonify({"error":str(e)}), 404
+    
 
 if __name__ == "__main__":
     app.run(debug=True, port=9000)

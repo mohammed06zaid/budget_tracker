@@ -4,6 +4,7 @@
   --text: #111;
   --primary: #6366f1;
   --border: #d4d4d8;
+  --muted: #666;
 }
 
 body.dark {
@@ -12,6 +13,7 @@ body.dark {
   --text: #f9fafb;
   --primary: #818cf8;
   --border: #334155;
+  --muted: #9ca3af;
 }
 
 * {
@@ -26,7 +28,7 @@ body {
   transition: 0.3s;
 }
 
-/* BUTTON */
+/* ================= BUTTON ================= */
 .theme-btn {
   position: fixed;
   top: 20px;
@@ -39,15 +41,51 @@ body {
   cursor: pointer;
 }
 
-/* APP */
+/* ================= APP LAYOUT ================= */
 .app {
-  max-width: 420px;
+  max-width: 1000px;
   margin: 80px auto;
   padding: 20px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+/* ================= CHART (LINKS) ================= */
+.chart-box {
+  flex: 0 0 45%;
+  min-width: 350px;
+  background: var(--card);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+.chart-box h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
   text-align: center;
 }
 
-/* FORM CARD */
+canvas {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+/* ================= CONTENT (RECHTS) ================= */
+.content-box {
+  flex: 0 0 50%;
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ================= FORM CARD ================= */
 .form-card {
   background: var(--card);
   padding: 24px;
@@ -55,7 +93,7 @@ body {
   box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
-/* FORM */
+/* ================= FORM ================= */
 form {
   display: flex;
   flex-direction: column;
@@ -71,10 +109,11 @@ form {
 label {
   font-size: 14px;
   margin-bottom: 4px;
-  color: #666;
+  color: var(--muted);
 }
 
-input, select {
+input,
+select {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -82,12 +121,13 @@ input, select {
   color: var(--text);
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-/* BUTTON */
+/* ================= SUBMIT BUTTON ================= */
 button[type="submit"] {
   margin-top: 10px;
   padding: 14px;
@@ -98,15 +138,15 @@ button[type="submit"] {
   font-size: 16px;
   cursor: pointer;
 }
-/* AUSGABEN LISTE */
+
+/* ================= AUSGABEN LISTE ================= */
 #expenses {
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* EINZELNE AUSGABE */
+/* ================= EINZELNE AUSGABE ================= */
 .expense-card {
   background: var(--card);
   border-radius: 14px;
@@ -123,7 +163,7 @@ button[type="submit"] {
   box-shadow: 0 14px 30px rgba(0,0,0,0.08);
 }
 
-/* LINKE SEITE */
+/* ================= LINKER TEIL ================= */
 .expense-left {
   display: flex;
   flex-direction: column;
@@ -140,10 +180,20 @@ button[type="submit"] {
   color: var(--muted);
 }
 
-/* BETRAG */
+/* ================= BETRAG ================= */
 .expense-amount {
   font-size: 18px;
   font-weight: 700;
   color: #16a34a;
 }
 
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  canvas {
+    height: 250px !important;
+  }
+}

@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("expense-form");
   const container = document.getElementById("expenses");
   const themeBtn = document.getElementById("toggle-theme");
+  const ctx = document.getElementById("expensesChart");
+  const max = document.getElementById("max-value");
+  const min = document.getElementById("min-value");
+ 
 
   /* ---------------- DARK MODE ---------------- */
   themeBtn.addEventListener("click", () => {
@@ -102,8 +106,60 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = createExpenseCard(data);
         container.prepend(card); // neueste oben
         form.reset();
+        
       })
       .catch(err => console.error("Fehler:", err));
   });
+
+
+  if (ctx) {
+    console.log("Canvas gefunden:", ctx);
+  } else {
+    console.error("Canvas nicht gefunden!");
+  }
+
+  fetch("/expenses/categories")
+  .then(res => res.json())
+  .then(data => {
+
+    const labels = Object.keys(data);
+    const values = Object.values(data); 
+
+    
+      new Chart(ctx, {
+        type: "bar", // Balkendiagramm
+        data: {
+          labels:labels ,
+          datasets: [{
+            label: "Ausgaben (€)",
+            data: values,
+            backgroundColor: "#6366f1"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          }
+        
+
+        
+        }
+});
+  })
+  .catch(err => console.error(err));
+
+
+  fetch("/expenses/max_min")
+  .then(res => res.json())
+  .then(data =>{
+    max.textContent = data.max + " €";
+    min.textContent = data.min + " €";
+  })
+
+  .catch(err => {
+    console.error("Fehler:", err);
+  });
+    
 
 });

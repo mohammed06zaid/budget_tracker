@@ -125,19 +125,20 @@ class Expenses:
                 list = []
                 for item in my_list: 
                         list.append(item["Ausgabe"]) 
-                max = max(list)
-                min = min(list)
-                return (max, min)
+                
+                max_val = max(list)
+                min_val = min(list)
+                return {"max": max_val, "min": min_val}
         
         @classmethod
-        def get_budget_status(cls,): 
+        def get_budget_status(cls,einkomm): 
                 my_list = cls.from_json()
                 ausgabe_sum = 0.0
 
                 for item in my_list: 
                         ausgabe_sum += item["Ausgabe"] 
                 
-                restgeld = cls.monthly_budget - ausgabe_sum
+                restgeld = einkomm - ausgabe_sum
 
                 if restgeld <= 45: 
                         return ("⚠ Achtung! Budget überschritten um 45 € ", restgeld)
