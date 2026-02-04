@@ -1,113 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Ausgaben App</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ausgaben App</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
 
-<body>
+  <body>
+    <!-- DARK MODE BUTTON -->
+    <button id="toggle-theme" class="theme-btn" title="Dark Mode umschalten">
+      🌙
+    </button>
 
-  <!-- DARK MODE BUTTON -->
-  <button id="toggle-theme" class="theme-btn" title="Dark Mode umschalten">
-    🌙
-  </button>
+    <!-- APP CONTAINER -->
+    <div class="app">
+      <div class="layout">
+        <div class="chart-box">
+          <h2>📊 Ausgaben Übersicht</h2>
+          <canvas id="expensesChart"></canvas>
+        </div>
+        <!-- STATUS & RESTGEHALT BOX -->
+        <div class="card status-card">
+          <h3>📊 Mein Status</h3>
 
-  <!-- APP CONTAINER -->
-  <div class="app">
+          <p class="status-text">Dein aktueller Finanzstatus</p>
 
-    <div class="layout">
+          <div class="salary-box">
+            <span>💼 Restgehalt</span>
+            <h2 id="remaining-salary"></h2>
+          </div>
 
-    <div class="chart-box">
-      <h2>📊 Ausgaben Übersicht</h2>
-      <canvas id="expensesChart"></canvas>
+          <div class="salary-input-box">
+            <label for="salary-input">💰 Mein Gehalt</label>
+            <div class="salary-input-group">
+              <input
+                type="number"
+                id="salary-input"
+                placeholder="z.B. 3000"
+                step="0.01"
+              />
+              <button id="salary-submit" type="button">✔️ Speichern</button>
+            </div>
+          </div>
+
+          <div class="status-message">
+            <label for="status-input">📝 Status Nachricht</label>
+            <input
+              type="text"
+              id="status-input"
+              placeholder="z.B. Alles unter Kontrolle 💪"
+            />
+          </div>
+        </div>
+
+        <div class="content-box">
+          <!-- TITLE -->
+          <h1>💰 Meine Ausgaben</h1>
+
+          <!-- FORM CARD -->
+          <div class="form-card">
+            <form id="expense-form">
+              <!-- BETRAG -->
+              <div class="field">
+                <label for="amount">Betrag (€)</label>
+                <input
+                  type="number"
+                  id="amount"
+                  name="amount"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <!-- KATEGORIE -->
+              <div class="field">
+                <label for="category">Kategorie</label>
+                <select id="category" name="category" required>
+                  <option value="">Bitte wählen</option>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Shopping">Shopping</option>
+                </select>
+              </div>
+
+              <!-- DATUM -->
+              <div class="field">
+                <label for="date">Datum</label>
+                <input type="date" id="date" name="date" required />
+              </div>
+
+              <!-- SUBMIT -->
+              <button type="submit">➕ Ausgabe hinzufügen</button>
+            </form>
+          </div>
+          <div class="stats-container">
+            <div class="stat-card">
+              <h3>💸 Höchste Ausgabe</h3>
+              <p id="max-value">– €</p>
+            </div>
+
+            <div class="stat-card">
+              <h3>📉 Niedrigste Ausgabe</h3>
+              <p id="min-value">– €</p>
+            </div>
+          </div>
+
+          <!-- AUSGABEN LISTE (WIRD VON JS GEFÜLLT) -->
+          <div id="expenses"></div>
+        </div>
+      </div>
     </div>
 
-    <div class = "content-box">
+    <!-- Chart.js Bibliothek -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- TITLE -->
-    <h1>💰 Meine Ausgaben</h1>
-
-    <!-- FORM CARD -->
-    <div class="form-card">
-      <form id="expense-form">
-
-        <!-- BETRAG -->
-        <div class="field">
-          <label for="amount">Betrag (€)</label>
-          <input
-            type="number"
-            id="amount"
-            name="amount"
-            step="0.01"
-            required
-          >
-        </div>
-
-        <!-- KATEGORIE -->
-        <div class="field">
-          <label for="category">Kategorie</label>
-          <select id="category" name="category" required>
-            <option value="">Bitte wählen</option>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Rent">Rent</option>
-            <option value="Shopping">Shopping</option>
-          </select>
-        </div>
-
-        <!-- DATUM -->
-        <div class="field">
-          <label for="date">Datum</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            required
-          >
-        </div>
-
-        <!-- SUBMIT -->
-        <button type="submit">
-          ➕ Ausgabe hinzufügen
-        </button>
-
-     
-
-      </form>
-      </div>
-      <div class="stats-container">
-        <div class="stat-card">
-          <h3>💸 Höchste Ausgabe</h3>
-          <p id="max-value">– €</p>
-        </div>
-
-        <div class="stat-card">
-          <h3>📉 Niedrigste Ausgabe</h3>
-          <p id="min-value">– €</p>
-        </div>
-        
-      </div>
-
-    <!-- AUSGABEN LISTE (WIRD VON JS GEFÜLLT) -->
-    <div id="expenses"></div>
-
-
-  </div>
-  </div>
-  </div>
-
-   <!-- Chart.js Bibliothek -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-  <!-- JAVASCRIPT -->
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-
- 
-</body>
+    <!-- JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
 </html>
-
-

@@ -160,6 +160,25 @@ document.addEventListener("DOMContentLoaded", () => {
   .catch(err => {
     console.error("Fehler:", err);
   });
+
+
+  const btn = document.getElementById("salary-submit");
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const incom = document.getElementById("salary-input").value;
+
+   fetch(`/expenses/status/${incom}`)
+   .then(res => res.json())
+   .then(data => {
+    console.log(data)
+    document.getElementById("remaining-salary").textContent = data + " €";
     
+  })
+   .catch(err => console.error(err));
+
+  })
+
 
 });

@@ -73,16 +73,14 @@ def max_min():
     except Exception as e:
         return jsonify({"error": str(e)}), 404
     
-@app.route("/expenses/status/<einkomm>", methods = ["Post"])
-def get_status():
+@app.route("/expenses/status/<incom>", methods = ["GET"])
+def get_status(incom):
     try:
-
-        data = request.get_json()
-        income = float(data.get("income"))
+        income = float(incom)
         result = Expenses.Expenses.get_budget_status(income)
-        return jsonify(result), 204
+        return jsonify(result), 200
     except Exception as e:
-        return jsonify({"error":str(e)}), 404
+        return jsonify({"error":str(e)}), 400
     
 
 if __name__ == "__main__":
