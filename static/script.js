@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ctx = document.getElementById("expensesChart");
   const max = document.getElementById("max-value");
   const min = document.getElementById("min-value");
- 
+  const registerForm = document.getElementById("register-form"); 
 
   /* ---------------- DARK MODE ---------------- */
   themeBtn.addEventListener("click", () => {
@@ -169,16 +169,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const incom = document.getElementById("salary-input").value;
 
-   fetch(`/expenses/status/${incom}`)
+   fetch("/income",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({income: incom})
+   })
    .then(res => res.json())
    .then(data => {
     console.log(data)
-    document.getElementById("remaining-salary").textContent = data + " €";
     
   })
    .catch(err => console.error(err));
 
   })
+
+  setInterval(() => {
+    fetch("/expenses/status")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("remaining-salary").textContent = data + " €";
+    });
+  }, 3000);
+
+
+  // register fun 
+  registerForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    const username = document.getElementById("username").value; 
+    const password = document.getElementById("password").value;
+
+    const response = await fetch("/register",{
+      method : "POST",
+      headers : { "Content-Type": "application/json" },
+      body: JSON.stringify({username, password})
+    });
+
+    const result = await response.json();
+    
+    if(response.ok){
+      window.location.href = "/index";
+    }else{
+      alert(result.error);
+    }
+
+
+  });
 
 
 });
