@@ -1,5 +1,6 @@
 from datetime import datetime 
 import json
+import sqlite3
 class Expenses:
         counter = 00
         ausgabe : float
@@ -131,19 +132,20 @@ class Expenses:
                 return {"max": max_val, "min": min_val}
         
         @classmethod
-        def get_budget_status(cls,einkomm): 
-                my_list = cls.from_json()
-                ausgabe_sum = 0.0
+        def get_budget_status(cls, user_id, income):
+                connention = sqlite3.connect("database.db")
+                cursor = connention.cursor()
+                cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ?",(user_id,))
+                total_expenses = cursor.fetchone()[0] or 0.0
+                connention.close()
 
-                for item in my_list: 
-                        ausgabe_sum += item["Ausgabe"] 
-                
-                restgeld = einkomm - ausgabe_sum
+                remaining_budget = income - total_expenses
 
-                if restgeld <= 45: 
-                        return ("⚠ Achtung! Budget überschritten um 45 € ", restgeld)
-                else: 
-                        return restgeld 
+                if remaining_budget < 45:
+                        return {"status": "⚠ Achtung! Budget überschritten um 45 €", "remaining_budget": remaining_budget}
+                else:
+                        return {"status": "Budget in Ordnung", "remaining_budget": remaining_budget}
+
                 
         @classmethod
         def delete_by_id(cls,id):

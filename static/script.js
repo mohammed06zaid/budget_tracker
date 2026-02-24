@@ -169,25 +169,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const incom = document.getElementById("salary-input").value;
 
-   fetch("/income",{
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({income: incom})
-   })
-   .then(res => res.json())
-   .then(data => {
-    console.log(data)
-    
-  })
-   .catch(err => console.error(err));
+    // Validate input
+    if (!incom || isNaN(incom) || Number(incom) <= 0) {
+      alert("Bitte geben Sie ein gültiges Einkommen ein.");
+      return;
+    }
 
-  })
+    fetch("/income", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ income: incom }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fehler beim Speichern des Einkommens.");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        alert(data.message || "Einkommen erfolgreich gespeichert.");
+      })
+      .catch((error) => {
+        console.error("Fehler:", error);
+        alert("Es gab ein Problem beim Speichern des Einkommens.");
+      });
+  });
 
   setInterval(() => {
     fetch("/expenses/status")
     .then(res => res.json())
     .then(data => {
-      document.getElementById("remaining-salary").textContent = data + " €";
+      if(data.error){
+        document.getElementById("remaining-salary").textContent = "Bitte Einkommen eingeben!";
+        return;
+      }
+      document.getElementById("remaining-salary").textContent = data.remaining_budget + " €";
     });
   }, 3000);
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 import Expenses
 import os
 import sqlite3
@@ -82,25 +82,64 @@ def max_min():
     except Exception as e:
         return jsonify({"error": str(e)}), 404
     
-current_income = None
+
 
 @app.route("/income", methods = ["POST"])
 def save_income():
-    global current_income
-    data = request.get_json()
-    current_income = data["income"]
+    try:
+        data = request.get_json()
 
-    return jsonify(current_income)
+        # Validate input data
+        if not data or "income" not in data:
+            return jsonify({"error": "Invalid input. 'income' field is required."}), 400
+
+        try:
+            amount = float(data["income"])
+            if amount <= 0:
+                return jsonify({"error": "Income must be a positive number."}), 400
+        except ValueError:
+            return jsonify({"error": "Income must be a valid number."}), 400
+
+        # Validate session
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not logged in."}), 401
+
+        # Save income to database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO incomes (user_id, amount, date) VALUES (?, ?, datetime('now'))",
+            (user_id, amount),
+        )
+        conn.commit()
+        conn.close()
+
+        return jsonify({"message": "Income saved"}), 201
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 @app.route("/expenses/status", methods = ["GET"])
 def get_status():
-    if current_income is None: 
-        return jsonify({"error": "no income set"}), 400
-    
-    remaining = Expenses.Expenses.get_budget_status(current_income)
-    return jsonify(remaining), 200
-    
+    user_id = session.get("user_id")
 
+    connenction = sqlite3.connect("database.db")
+    cursor = connenction.cursor()   
+
+    cursor.execute("select amount from incomes where user_id = ? ORDER BY id DESC LIMIT 1", (user_id,))
+    current_income = cursor.fetchone()
+
+    if current_income is None:
+        connenction.close()
+        return jsonify({"error": "No income found for user"}), 404
+
+    income = current_income[0]   
+
+    resukt = Expenses.Expenses.get_budget_status(user_id, income)
+    return jsonify(resukt), 200 
+
+    
 def init_db():
     connection = sqlite3.connect("database.db")
     
