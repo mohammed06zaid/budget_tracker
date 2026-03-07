@@ -175,6 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    console.log("Einkommen:", incom);
+
     fetch("/income", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -182,7 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Fehler beim Speichern des Einkommens.");
+          return response.json().then((errorData) => {
+            throw new Error(errorData.error || "Fehler beim Speichern des Einkommens.");
+          });
         }
         return response.json();
       })
@@ -191,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Fehler:", error);
-        alert("Es gab ein Problem beim Speichern des Einkommens.");
+        alert(error.message || "Es gab ein Problem beim Speichern des Einkommens.");
       });
   });
 

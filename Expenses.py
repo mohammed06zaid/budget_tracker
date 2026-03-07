@@ -1,5 +1,6 @@
 from datetime import datetime 
 import json
+from multiprocessing import connection
 import sqlite3
 class Expenses:
         counter = 00
@@ -23,7 +24,15 @@ class Expenses:
                         "Datum": self.datum.isoformat()
                 }
                 Expenses.expenses_list.append(myDict)
-       
+        
+
+        @classmethod
+        def add_expense(cls, ausgabe, kategorie, date_str, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+                cursor.execute("INSERT INTO expenses (amount, category, date, user_id) VALUES (?, ?, ?, ?)", (ausgabe, kategorie, date_str, user_id))
+                connection.commit()
+                connection.close()
 
         @property
         def ausgabe(self):
@@ -66,37 +75,35 @@ class Expenses:
 
 
         @classmethod
-        def total_expenses(cls):
-                my_list = cls.from_json()
-                totel = 0.0
+        def total_expenses(cls, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+                cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ?", (user_id,))
+                total = cursor.fetchone()[0]
+                connection.close()
+                return total if total else 0.0
 
-                for item in my_list:
-                        totel += item["Ausgabe"]
-                
-                return totel
+
         
         @classmethod 
-        def total_by_category(cls, category):
-                my_list = cls.from_json()
-                totel = 0.0
-
-                for item in my_list: 
-                        if item["Kategorie"] == category:
-                                totel += item["Ausgabe"]
-                
-                return totel
+        def total_by_category(cls, category, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+                cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ? AND category = ?", (user_id, category))
+                total = cursor.fetchone()[0]
+                connection.close()
+                return total if total else 0.0
 
         @classmethod
-        def avrg_expenses(cls):
-                my_list = cls.from_json()
-                count = 0 
-                totel = 0.0
+        def avrg_expenses(cls, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+                cursor.execute("SELECT AVG(amount) FROM expenses WHERE user_id = ?", (user_id,))
+                avg = cursor.fetchone()[0]
+                connection.close()
+                return avg if avg else 0.0
 
-                for item in my_list:
-                        totel += item["Ausgabe"]
-                        count +=1
-
-                return totel / count
+                
                 
         @classmethod
         def output_by_categroy(cls, category):
@@ -121,14 +128,12 @@ class Expenses:
                 return list
         
         @classmethod
-        def get_min_max_expense(cls): 
-                my_list = cls.from_json()
-                list = []
-                for item in my_list: 
-                        list.append(item["Ausgabe"]) 
-                
-                max_val = max(list)
-                min_val = min(list)
+        def get_min_max_expense(cls):
+                conccention = sqlite3.connect("database.db")
+                cursor = conccention.cursor()
+                cursor.execute("SELECT MIN(amount), MAX(amount) FROM expenses") 
+                min_val, max_val = cursor.fetchone()
+                connection.close()
                 return {"max": max_val, "min": min_val}
         
         @classmethod
@@ -149,22 +154,29 @@ class Expenses:
                 
         @classmethod
         def delete_by_id(cls,id):
-                # Aus der Memory-Liste löschen
-                for index, item in enumerate(cls.expenses_list): 
-                        if(item["id"] == int(id)):
+                # Delete from database
+                try:
+                        conn = sqlite3.connect("database.db")
+                        cur = conn.cursor()
+                        cur.execute("DELETE FROM expenses WHERE id = ?", (int(id),))
+                        conn.commit()
+                finally:
+                        conn.close()
+
+                # Also remove from in-memory list if present
+                for index, item in enumerate(list(cls.expenses_list)):
+                        if item.get("id") == int(id):
                                 cls.expenses_list.pop(index)
                                 break
-                # In JSON-Datei speichern
-                cls.to_json()
                 
 
 
 
         @classmethod    
-        def totals_by_category(cls):
+        def totals_by_category(cls, user_id):
                 return {
-                        "Food": cls.total_by_category("Food"),
-                        "Rent": cls.total_by_category("Rent"),
-                        "Shopping": cls.total_by_category("Shopping"),
-                        "Transport": cls.total_by_category("Transport")
+                        "Food": cls.total_by_category("Food", user_id),
+                        "Rent": cls.total_by_category("Rent", user_id),
+                        "Shopping": cls.total_by_category("Shopping", user_id),
+                        "Transport": cls.total_by_category("Transport", user_id)
                 }
