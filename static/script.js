@@ -29,43 +29,49 @@ document.addEventListener("DOMContentLoaded", () => {
   function createExpenseCard(expense) {
     const card = document.createElement("div");
     card.className = "expense-card";
-
+ 
+    // Bug #3 fix: API gibt category/amount/date zurück (nicht Kategorie/Ausgabe/Datum)
+    const category = expense.category || expense.Kategorie || "–";
+    const amount   = expense.amount   || expense.Ausgabe   || "–";
+    const date     = expense.date     || expense.Datum     || "–";
+    const id       = expense.id;
+ 
     card.innerHTML = `
       <div class="expense-left">
         <div class="expense-category">
-          ${getCategoryIcon(expense.Kategorie)} ${expense.Kategorie}
+          ${getCategoryIcon(category)} ${category}
         </div>
         <div class="expense-date">
-          📅 ${expense.Datum}
+          📅 ${date}
         </div>
       </div>
       <div class="expense-amount">
-        ${expense.Ausgabe} €
+        ${amount} €
       </div>
     `;
-
+ 
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "🗑 Ausgabe Löschen";
     deleteBtn.classList.add("delete-expense-btn"); 
     card.appendChild(deleteBtn);
-
-    deleteBtn.addEventListener("click", 
-       () => {
-        fetch(`expenses/${expense.id}`,{method: "DELETE"})
-
-        .then(res=> {
-          if(res.ok){
+ 
+  deleteBtn.addEventListener("click", async () => {
+    console.log("Lösche expense ID:", id); // Debug
+    try {
+        const res = await fetch(`/expenses/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (res.ok) {
             card.remove();
-          }else{
-            alert("Fehler beim Löschen der Ausgabe.");
-          }
-        })
-        .catch(error => {
-          console.error("Fehler", error);
-          alert("Fehler beim Löschen der Ausgabe.");
-        });
-       });
-
+            console.log(data.message);
+        } else {
+            alert("Fehler beim Löschen der Ausgabe: " + data.error);
+        }
+    } catch (error) {
+        console.error("Fehler", error);
+        alert("Fehler beim Löschen der Ausgabe.");
+    }
+  });
+ 
     return card;
   }
 
@@ -212,29 +218,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 3000);
 
 
-  // register fun 
-  registerForm.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-
-    const username = document.getElementById("username").value; 
-    const password = document.getElementById("password").value;
-
-    const response = await fetch("/register",{
-      method : "POST",
-      headers : { "Content-Type": "application/json" },
-      body: JSON.stringify({username, password})
-    });
-
-    const result = await response.json();
-    
-    if(response.ok){
-      window.location.href = "/index";
-    }else{
-      alert(result.error);
-    }
-
-
-  });
+  // register fun - only attach if the form exists; do not override normal POST
+  if (registerForm) {
+    // Let the form submit normally so the Flask route handles the POST.
+    // If you prefer AJAX registration, implement it here and send form-encoded
+    // or JSON matching the server expectations.
+  }
 
 
 });

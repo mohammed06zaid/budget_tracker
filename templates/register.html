@@ -8,13 +8,29 @@
 </head>
 <body class="register-page">
     <div class="register-card">
-        <h2>Willkommen!</h2>
-        <p>Bitte wählen Sie eine Option:</p>
+        <h2>Registrierung</h2>
 
-        <div class="options">
-            <a href="/login" class="button">Anmelden</a>
-            <a href="/register" class="button">Registrieren</a>
-        </div>
+        {% if error %}
+            <div class="error-message">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <form action="/register" method="POST">
+            <div class="field">
+                <label for="username">Benutzername:</label>
+                <input type="text" id="username" name="username" placeholder="Benutzername wählen" required>
+            </div>
+
+            <div class="field">
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" name="password" placeholder="Passwort wählen" required>
+            </div>
+
+            <button type="submit">Registrieren</button>
+        </form>
+
+        <p>Sie haben bereits ein Konto? <a href="/login">Anmelden</a></p>
     </div>
 </body>
 </html>

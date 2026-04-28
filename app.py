@@ -22,23 +22,31 @@ if os.path.exists("data.json"):
 def home():
     return render_template("index.html")
 
+
 @app.route("/expenses", methods=["GET"])
 def get_expenses():
     try:
-        # Falls data.json aktueller ist, neu laden
-        if os.path.exists("data.json"):
-            Expenses.Expenses.expenses_list = Expenses.Expenses.from_json()
-        return jsonify(Expenses.Expenses.expenses_list)
+        user_id = session.get("user_id")
+
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+
+        expenses = Expenses.Expenses.get_expenses_by_user(user_id)
+
+        return jsonify(expenses)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
     
 
 @app.route('/expenses/categories', methods = ["GET"])
 def totals_by_category():
     try:
-        if os.path.exists("data.json"):
-            Expenses.Expenses.expenses_list = Expenses.Expenses.from_json()
-            return jsonify(Expenses.Expenses.totals_by_category())
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+        return jsonify(Expenses.Expenses.totals_by_category(user_id))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -46,52 +54,50 @@ def totals_by_category():
 @app.route("/expenses", methods=["POST"])
 def add_expense():
     try:
-        data = request.get_json(force=True)
-
-        if not data:
-            return jsonify({"error": "Invalid or missing JSON data. Ensure Content-Type is 'application/json'."}), 400
-
-        # Neue Ausgabe mit Expenses-Klasse erstellen
-        expense = Expenses.Expenses(
-            ausgabe=float(data["ausgabe"]),
-            kategorie=data["kategorie"],
-            date_str=data["datum"]
-        )
-
-        # Wenn der Benutzer eingeloggt ist, auch in die Datenbank schreiben
         user_id = session.get("user_id")
-        if user_id:
-            try:
-                Expenses.Expenses.add_expense(float(data["ausgabe"]), data["kategorie"], data["datum"], user_id)
-            except Exception:
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+
+        data = request.get_json()
+
+       
+        # Neue Ausgabe mit Expenses-Klasse erstellen
+        
+        amount= data["ausgabe"]
+        kategorie= data["kategorie"]
+        date_str= data["datum"]
+    
+        Expenses.Expenses.add_expense(amount, kategorie, date_str, user_id)
+        return jsonify({"message": "Expense added successfully"}), 201
+    except Exception:
+        return jsonify({"error": "Failed to add expense"}), 500
                 # DB-Fehler dürfen nicht das gesamte Hinzufügen verhindern; loggen wäre besser
-                pass
-
-        # In JSON-Datei speichern
-        Expenses.Expenses.to_json()
-
-        # Letzte hinzugefügte Ausgabe zurückgeben
-        return jsonify(Expenses.Expenses.expenses_list[-1]), 201
-    except Exception as e:
-        return jsonify({"error": "Invalid JSON data: " + str(e)}), 400
-
-@app.route("/expenses/<id>", methods = ["DELETE"])
-def delete_expenses(id):
+                
+@app.route("/expenses/<int:expense_id>", methods=["DELETE"])
+def delete_expense(expense_id):
     try:
-        Expenses.Expenses.delete_by_id(id)
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
 
-        return "", 204
-    except:
-        return "", 404
+        Expenses.Expenses.delete_by_id(expense_id, user_id)
+
+        return jsonify({"message": "Expense deleted"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
     
 @app.route("/expenses/max_min", methods = ["GET"])
 def max_min():
-    try: 
-        result = Expenses.Expenses.get_min_max_expense()
+    try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+        result = Expenses.Expenses.get_min_max_expense(user_id)
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 404
-    
 
 
 @app.route("/income", methods = ["POST"])
@@ -266,7 +272,8 @@ def register():
         password = request.form.get("password")
 
         if not username or not password:
-            return "Username or password are required", 400
+            error_msg = "Benutzername und Passwort sind erforderlich."
+            return render_template("register.html", error=error_msg), 400
 
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
@@ -276,7 +283,8 @@ def register():
         user = cursor.fetchone()
 
         if user:
-            return "User already exists. Please log in.", 400
+            error_msg = "Benutzer existiert bereits. Bitte anmelden."
+            return render_template("register.html", error=error_msg), 400
         else:
             # Benutzer existiert nicht, registrieren
             hashed_password = generate_password_hash(password)
@@ -285,11 +293,20 @@ def register():
                 (username, hashed_password)
             )
             conn.commit()
+            new_user_id = cursor.lastrowid
             conn.close()
+            session["user_id"] = new_user_id
+            session["username"] = username
             return redirect(url_for("home"))
 
     return render_template("register.html")
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 if __name__ == "__main__":
     init_db()
+    app.secret_key = "super_secret_key"
     app.run(debug=True, port=9000)

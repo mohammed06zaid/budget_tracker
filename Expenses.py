@@ -1,6 +1,5 @@
 from datetime import datetime 
 import json
-from multiprocessing import connection
 import sqlite3
 class Expenses:
         counter = 00
@@ -33,6 +32,30 @@ class Expenses:
                 cursor.execute("INSERT INTO expenses (amount, category, date, user_id) VALUES (?, ?, ?, ?)", (ausgabe, kategorie, date_str, user_id))
                 connection.commit()
                 connection.close()
+        
+        @classmethod
+        def get_expenses_by_user(cls, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+
+                cursor.execute(
+                        "SELECT id, amount, category, date FROM expenses WHERE user_id = ?",
+                        (user_id,)
+                )
+
+                expenses = cursor.fetchall()
+
+                connection.close()
+                expenses_list = []
+                for expense in expenses:
+                        expenses_list.append({
+                                "id": expense[0],
+                                "amount": expense[1],
+                                "category": expense[2],
+                                "date": expense[3]
+                        })
+
+                return expenses_list
 
         @property
         def ausgabe(self):
@@ -128,10 +151,10 @@ class Expenses:
                 return list
         
         @classmethod
-        def get_min_max_expense(cls):
-                conccention = sqlite3.connect("database.db")
-                cursor = conccention.cursor()
-                cursor.execute("SELECT MIN(amount), MAX(amount) FROM expenses") 
+        def get_min_max_expense(cls, user_id):
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor()
+                cursor.execute("SELECT MIN(amount), MAX(amount) FROM expenses WHERE user_id = ?", (user_id,))
                 min_val, max_val = cursor.fetchone()
                 connection.close()
                 return {"max": max_val, "min": min_val}
@@ -153,22 +176,18 @@ class Expenses:
 
                 
         @classmethod
-        def delete_by_id(cls,id):
+        def delete_by_id(cls,expense_id, user_id):
                 # Delete from database
-                try:
-                        conn = sqlite3.connect("database.db")
-                        cur = conn.cursor()
-                        cur.execute("DELETE FROM expenses WHERE id = ?", (int(id),))
-                        conn.commit()
-                finally:
-                        conn.close()
+                connection = sqlite3.connect("database.db")
+                cursor = connection.cursor() 
+                cursor.execute(
+                                "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+                                (expense_id, user_id)
+                        )
+                connection.commit()
+                connection.close()
 
-                # Also remove from in-memory list if present
-                for index, item in enumerate(list(cls.expenses_list)):
-                        if item.get("id") == int(id):
-                                cls.expenses_list.pop(index)
-                                break
-                
+              
 
 
 
