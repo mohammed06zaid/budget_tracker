@@ -225,5 +225,97 @@ document.addEventListener("DOMContentLoaded", () => {
     // or JSON matching the server expectations.
   }
 
-
 });
+
+
+// ===== CHATBOT (Budget Assistant) =====
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn    = document.getElementById("chat-toggle-btn");
+  const closeBtn     = document.getElementById("chat-close-btn");
+  const chatWindow   = document.getElementById("chat-window");
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput    = document.getElementById("chat-input");
+  const sendBtn      = document.getElementById("chat-send-btn");
+
+  // Gesprächsverlauf – wird bei jedem Request mitgeschickt
+  let chatHistory = [];
+
+  // --- Chat öffnen / schließen ---
+  toggleBtn.addEventListener("click", () => {
+    chatWindow.classList.toggle("chat-hidden");
+    if (!chatWindow.classList.contains("chat-hidden")) {
+      chatInput.focus();
+    }
+  });
+
+  closeBtn.addEventListener("click", () => {
+    chatWindow.classList.add("chat-hidden");
+  });
+
+  // --- Nachricht im Fenster anzeigen ---
+  function appendMessage(text, role) {
+    const msg = document.createElement("div");
+    msg.classList.add("chat-msg", role);
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return msg;
+  }
+
+  // --- Lade-Indikator (drei blinkende Punkte) ---
+  function showLoading() {
+    const msg = document.createElement("div");
+    msg.classList.add("chat-msg", "bot", "loading");
+    msg.innerHTML = "<span>●</span><span>●</span><span>●</span>";
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return msg;
+  }
+
+  // --- Nachricht an /chat senden ---
+  async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return; // Leere Nachrichten ignorieren
+
+    appendMessage(text, "user");
+    chatInput.value = "";
+    sendBtn.disabled = true;
+
+    const loadingMsg = showLoading();
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: chatHistory }),
+      });
+
+      const data = await response.json();
+      loadingMsg.remove();
+
+      if (response.ok) {
+        appendMessage(data.reply, "bot");
+        // Verlauf für den nächsten Request speichern
+        chatHistory.push({ role: "user",      content: text       });
+        chatHistory.push({ role: "assistant", content: data.reply });
+      } else {
+        appendMessage("Fehler: " + (data.error || "Unbekannter Fehler."), "error");
+      }
+    } catch (err) {
+      loadingMsg.remove();
+      appendMessage("Backend nicht erreichbar. Bitte versuche es später.", "error");
+    } finally {
+      sendBtn.disabled = false;
+      chatInput.focus();
+    }
+  }
+
+  // --- Button-Klick und Enter-Taste ---
+  sendBtn.addEventListener("click", sendMessage);
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+});
+
+// ===== ENDE CHATBOT =====

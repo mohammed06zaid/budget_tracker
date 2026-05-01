@@ -117,6 +117,28 @@
       </div>
     </div>
 
+    <!-- ===== CHATBOT (Budget Assistant) ===== -->
+
+    <!-- Öffnen-Button unten rechts -->
+    <button id="chat-toggle-btn" class="chat-toggle-btn" title="Budget Assistant öffnen">
+      💬
+    </button>
+
+    <!-- Chat-Fenster -->
+    <div id="chat-window" class="chat-window chat-hidden">
+      <div class="chat-header">
+        <span>🤖 Budget Assistant</span>
+        <button id="chat-close-btn" class="chat-close-btn">✕</button>
+      </div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Frage stellen..." autocomplete="off" />
+        <button id="chat-send-btn" class="chat-send-btn">➤</button>
+      </div>
+    </div>
+
+    <!-- ===== ENDE CHATBOT ===== -->
+
     <!-- Chart.js Bibliothek -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

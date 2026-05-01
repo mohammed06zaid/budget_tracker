@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 import Expenses
+import GeminiChatService
 import os
 import sqlite3
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -305,6 +306,68 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+def _build_user_context(user_id: int) -> str:
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT amount FROM incomes WHERE user_id = ? ORDER BY id DESC LIMIT 1", (user_id,))
+    row = cursor.fetchone()
+    income = row[0] if row else None
+
+    conn.close()
+
+    expenses = Expenses.Expenses.get_expenses_by_user(user_id)
+    total = Expenses.Expenses.total_expenses(user_id)
+    avg = Expenses.Expenses.avrg_expenses(user_id)
+    by_category = Expenses.Expenses.totals_by_category(user_id)
+
+    lines = [
+        "Du bist ein hilfreicher Budget-Assistent. Antworte nur auf Basis der folgenden Nutzerdaten.",
+        "",
+        f"Monatliches Einkommen: {income} €" if income else "Kein Einkommen eingetragen.",
+        f"Gesamtausgaben: {total:.2f} €",
+        f"Durchschnittliche Ausgabe: {avg:.2f} €",
+        "",
+        "Ausgaben nach Kategorie:",
+    ]
+    for cat, val in by_category.items():
+        lines.append(f"  - {cat}: {val:.2f} €")
+
+    if income is not None:
+        remaining = income - total
+        lines.append(f"\nVerbleibendes Budget: {remaining:.2f} €")
+
+    if expenses:
+        lines.append("\nLetzte Ausgaben (max. 10):")
+        for e in expenses[-10:]:
+            lines.append(f"  - {e['date']} | {e['category']} | {e['amount']} €")
+
+    return "\n".join(lines)
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not logged in."}), 401
+
+        data = request.get_json()
+        question = data.get("message", "").strip()
+        if not question:
+            return jsonify({"error": "Nachricht darf nicht leer sein."}), 400
+
+        chat_history = data.get("history", [])
+        system_prompt = _build_user_context(user_id)
+        reply = GeminiChatService.send_question(question, chat_history, system_prompt)
+        return jsonify({"reply": reply}), 200
+
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 502
+    except Exception as e:
+        return jsonify({"error": f"Unerwarteter Fehler: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     init_db()
